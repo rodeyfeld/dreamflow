@@ -19,7 +19,7 @@ steps:
       auto_tag: true
       <<: *docker_creds
     when:
-      - event: push
+      - event: [push, manual]
         branch: main
 
   deploy:
@@ -31,6 +31,5 @@ steps:
       - kubectl --kubeconfig=/tmp/kubeconfig rollout restart deployment/dreamflow-worker -n galaxy
       - kubectl --kubeconfig=/tmp/kubeconfig rollout restart deployment/dreamflow-flower -n galaxy
     when:
-      - event: push
+      - event: [push, manual]
         branch: main
-
