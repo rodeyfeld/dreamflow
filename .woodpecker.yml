@@ -1,0 +1,36 @@
+variables:
+  - &docker_creds
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+
+  - &deploy_creds
+    image: bitnami/kubectl
+    environment:
+      KUBECONFIG_BASE64:
+        from_secret: kubeconfig
+
+steps:
+  build:
+    image: woodpeckerci/plugin-docker
+    settings:
+      repo: edrodefeld/dreamflow
+      auto_tag: true
+      <<: *docker_creds
+    when:
+      - event: push
+        branch: main
+
+  deploy:
+    <<: *deploy_creds
+    commands:
+      - echo $KUBECONFIG_BASE64 | base64 -d > /tmp/kubeconfig
+      - kubectl --kubeconfig=/tmp/kubeconfig rollout restart deployment/dreamflow-webserver -n galaxy
+      - kubectl --kubeconfig=/tmp/kubeconfig rollout restart deployment/dreamflow-scheduler -n galaxy
+      - kubectl --kubeconfig=/tmp/kubeconfig rollout restart deployment/dreamflow-worker -n galaxy
+      - kubectl --kubeconfig=/tmp/kubeconfig rollout restart deployment/dreamflow-flower -n galaxy
+    when:
+      - event: push
+        branch: main
+

@@ -1,0 +1,1 @@
+SELECT * FROM archive_finder_imageryfinder;
